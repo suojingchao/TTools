@@ -2,6 +2,8 @@
 
 import sys
 import re
+from datetime import *
+import time
 from processRecord import ProcessRecord
 from processRecord import STATUS_NORMAL
 from processRecord import STATUS_ONLY_END
@@ -12,7 +14,7 @@ path = DEFAULT_INPUT_PATH
 processName = None
 
 def dumpHelp():
-	print '''Usage :
+	print '''Usage :python main.py -p process [-i] [logFile] [-h]
 	-p: （required）process name.
 	-i: （optional）input file path(default ./tracker.txt).
 	-h:  dump help info.
@@ -27,12 +29,12 @@ def argCheck(argc, argv):
 		if index == 0:
 			continue
 		arg = argv[index]
-		print arg
 		if arg[:1] == "-":
-			cmd = arg
-			if cmd == "-h":
+			if cmd[:1] == "-" or cmd == "-h":
 				dumpHelp()
 				return
+			else :
+				cmd = arg
 		elif cmd == "-p":
 			processName = arg
 		elif cmd == "-i":
@@ -40,7 +42,11 @@ def argCheck(argc, argv):
 		else :
 			dumpHelp()
 			return
-	return 1
+	if not processName:
+		dumpHelp()
+		return
+	else :
+		return 1
 
 def dumpResult(processRecords):
 	result = ""
@@ -48,45 +54,52 @@ def dumpResult(processRecords):
 	for processRecord in processRecords.values():
 		result = result + processRecord.dumpSelf()
 		keepAliveDuration = keepAliveDuration + processRecord.duration()
-	print (('results: \n{0:%d}\t{1:5}\t{2:12}\t{3:12}\t{4:^}\n%s'%(len(processName), result)).format('processName', 'pid', 'begin', 'end', 'duration')) + ('{0:%d}\t{1:5}\t{2:12}\t{3:12}\t{4:^}'%len(processName)).format("Total:", "%5s"%"", "%12s"%"", "%12s"%"", (str(keepAliveDuration)))
+	print (('results: \n{0:%d}\t{1:5}\t{2:19}\t{3:19}\t{4:^}\n%s'%(len(processName), result)).format('processName', 'pid', 'begin', 'end', 'duration(s)')) + ('{0:%d}\t{1:5}\t{2:19}\t{3:19}\t{4:^}'%len(processName)).format("Total:", "%5s"%"", "%19s"%"", "%19s"%"", (str(keepAliveDuration)))
 
 def main(argc, argv):
 	if not argCheck(argc, argv):
 		return
-	log = open(path, "r")
-	line = log.readline()
-	processRecords = {}
-	while line:
-		line = line.replace("\n", " ")
-		if re.match(r"^\d\d-\d\d", line):
-			outArray = re.split(r"\s+", line)
-			date = outArray[0]
-			time = outArray[1]
-			action = outArray[5]		
-			if processName in line and "[" in line and "]" in line: 
-				processBegin = line.index("[")
-				processEnd = line.index("]")
-				processSection = line[processBegin:processEnd+1]
-				processArray = processSection.split(",")
-				pid = processArray[1]
-				curProcess = processRecords.get(pid, None)
-				if (action == "am_proc_start:" and processArray[3] == processName) or (action == "am_proc_bound:" and processArray[2] == processName):					
-					curProcess = ProcessRecord(pid, processName)
-					curProcess.setBegin(time)
-					curProcess.setStatus(STATUS_ONLY_BEGIN)
-					processRecords[pid] = curProcess
-
-				elif (action == "am_proc_died" or action == "am_kill") and processArray[2] == processName:
-					if curProcess:
-						curProcess.setEnd(time)
-						curProcess.setStatus(STATUS_NORMAL)
-					else :
+	year = date.today().year
+	try :
+		log = open(path, "r")
+	except IOError:
+		print "No such file or directory: %s"%path
+	else :
+		line = log.readline()
+		processRecords = {}
+		while line:
+			line = line.replace("\n", " ")
+			if re.match(r"^\d\d-\d\d", line):
+				outArray = re.split(r"\s+", line)
+				dateLog = outArray[0]
+				time = outArray[1]
+				finalDate = "%s-%s %s"%(year, dateLog, time)
+				action = outArray[5]		
+				if processName in line and "[" in line and "]" in line: 
+					processBegin = line.index("[")
+					processEnd = line.index("]")
+					processSection = line[processBegin:processEnd+1]
+					processArray = processSection.split(",")
+					pid = processArray[1]
+					curProcess = processRecords.get(pid, None)
+					if (action == "am_proc_start:" and processArray[3] == processName) or (action == "am_proc_bound:" and processArray[2] == processName):					
 						curProcess = ProcessRecord(pid, processName)
-						curProcess.setEnd(time)
-						curProcess.setStatus(STATUS_ONLY_END)						
-				#print date + " " + time + " " + pid + " " + processSection
-		line = log.readline() 
-	dumpResult(processRecords)	
+						curProcess.setBegin(finalDate)
+						curProcess.setStatus(STATUS_ONLY_BEGIN)
+						processRecords[pid] = curProcess
+
+					elif (action == "am_proc_died" or action == "am_kill") and processArray[2] == processName:
+						if curProcess:
+							curProcess.setEnd(finalDate)
+							curProcess.setStatus(STATUS_NORMAL)
+						else :
+							curProcess = ProcessRecord(pid, processName)
+							curProcess.setEnd(finalDate)
+							curProcess.setStatus(STATUS_ONLY_END)
+							processRecords[pid] = curProcess						
+					#print date + " " + time + " " + pid + " " + processSection
+			line = log.readline() 
+		dumpResult(processRecords)	
 		
 # entry point.
 main(len(sys.argv), sys.argv)

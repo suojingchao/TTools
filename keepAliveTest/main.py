@@ -37,8 +37,10 @@ def argCheck(argc, argv):
 				cmd = arg
 		elif cmd == "-p":
 			processName = arg
+			cmd = ""
 		elif cmd == "-i":
 			path = arg
+			cmd = ""
 		else :
 			dumpHelp()
 			return

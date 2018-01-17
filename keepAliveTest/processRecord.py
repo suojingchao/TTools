@@ -30,6 +30,8 @@ class ProcessRecord:
 	def setStatus(self, status):
 		self.status = status
 
+	def getStatus(self):
+		return self.status
 
 	def duration(self):
 		if self.begin != "" and self.end != "":

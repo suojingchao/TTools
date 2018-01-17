@@ -21,7 +21,7 @@ def main(argv):
 	begin = time.time()
 	os.system('adb -s %s logcat -b events -v threadtime  > %s &' % (device, logcatPath))
 	#adb shell monkey -v -v --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200  100000
-	os.system('adb -s %s shell monkey -v -v --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200  100000 > %s' % (device, monkeyLogPath))
+	os.system('adb -s %s shell monkey -v -v -v --ignore-security-exceptions --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200  --pkg-blacklist-file /sdcard/blacklist.txt 100000 > %s' % (device, monkeyLogPath))
 	#out = os.popen('jobs').read()
 	#print out
 	#outArray = re.split(r"\s+", out)

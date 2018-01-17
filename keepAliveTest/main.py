@@ -69,18 +69,20 @@ def main(argc, argv):
 	else :
 		line = log.readline()
 		processRecords = {}
+		curProcess = None
+		finalDate = None
 		while line:
 			line = line.replace("\n", " ")
 			if re.match(r"^\d\d-\d\d", line):
 				outArray = re.split(r"\s+", line)
 				dateLog = outArray[0]
-				time = outArray[1]
-				finalDate = "%s-%s %s"%(year, dateLog, time)
+				t = outArray[1]
+				finalDate = "%s-%s %s"%(year, dateLog, t)
 				action = outArray[5]		
 				if processName in line and "[" in line and "]" in line: 
 					processBegin = line.index("[")
 					processEnd = line.index("]")
-					processSection = line[processBegin:processEnd+1]
+					processSection = line[processBegin:processEnd]
 					processArray = processSection.split(",")
 					pid = processArray[1]
 					curProcess = processRecords.get(pid, None)
@@ -98,9 +100,15 @@ def main(argc, argv):
 							curProcess = ProcessRecord(pid, processName)
 							curProcess.setEnd(finalDate)
 							curProcess.setStatus(STATUS_ONLY_END)
-							processRecords[pid] = curProcess						
-					#print date + " " + time + " " + pid + " " + processSection
-			line = log.readline() 
+							processRecords[pid] = curProcess
+					#else :
+					#	print 'action[%s]pid[%s]name[%s]' % (action, pid, processArray[2])						
+			line = log.readline()
+		if curProcess and curProcess.getStatus() == STATUS_ONLY_BEGIN:
+			curProcess.setEnd(finalDate)
+			curProcess.setStatus(STATUS_NORMAL)
+		else :
+			print 'all match.'
 		dumpResult(processRecords)	
 		
 # entry point.

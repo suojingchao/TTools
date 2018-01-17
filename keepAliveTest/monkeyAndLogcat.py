@@ -16,6 +16,7 @@ def main(argv):
 
 	begin = time.time()
 	os.system('adb logcat -b events -v threadtime  > %s &' % logcatPath)
+	#adb shell monkey -v -v --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200  100000
 	os.system('adb -s %s shell monkey -v -v --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 20  500 > %s' % (device, monkeyLogPath))
 	#out = os.popen('jobs').read()
 	#print out

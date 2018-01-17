@@ -6,26 +6,26 @@ import re
 import sys
 import io
 
+# a helper for logcat and monkey working together.
 def main(argv):
 	device = argv[1]
 	logcatPath = argv[2]
 	monkeyLogPath = argv[3]
 
-	os.remove(logcatPath)
-	os.remove(monkeyLogPath)
+	try:
+		os.remove(logcatPath)
+		os.remove(monkeyLogPath)
+	except OSError:
+		print 'IOError'
 
 	begin = time.time()
-	os.system('adb logcat -b events -v threadtime  > %s &' % logcatPath)
+	os.system('adb -s %s logcat -b events -v threadtime  > %s &' % (device, logcatPath))
 	#adb shell monkey -v -v --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200  100000
-	os.system('adb -s %s shell monkey -v -v --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 20  500 > %s' % (device, monkeyLogPath))
+	os.system('adb -s %s shell monkey -v -v --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200  100000 > %s' % (device, monkeyLogPath))
 	#out = os.popen('jobs').read()
 	#print out
 	#outArray = re.split(r"\s+", out)
 	#os.system('kill %s' % outArray[2])
 	end = time.time()
-	duration = str(end - begin)
- 	file = io.open(logcatPath, mode='w+', encoding='utf-8')
-	file.write('finish! duration: ' + duration)
-	file.close()
-
+	print 'duration: %d' % (end - begin)
 main(sys.argv)

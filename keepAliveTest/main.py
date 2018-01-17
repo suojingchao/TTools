@@ -84,25 +84,26 @@ def main(argc, argv):
 					processEnd = line.index("]")
 					processSection = line[processBegin:processEnd]
 					processArray = processSection.split(",")
-					pid = processArray[1]
-					curProcess = processRecords.get(pid, None)
 					if ((action == "am_proc_start:" or action == "am_proc_start") and processArray[3] == processName) or ((action == "am_proc_bound:" or action == "am_proc_bound") and processArray[2] == processName):					
+						pid = processArray[1]
 						curProcess = ProcessRecord(pid, processName)
 						curProcess.setBegin(finalDate)
 						curProcess.setStatus(STATUS_ONLY_BEGIN)
 						processRecords[pid] = curProcess
-
+						#print 'pid[%s]name[%s] begin' % (pid, processArray[3])
 					elif (action == "am_proc_died" or action == "am_kill" or action == "am_proc_died:" or action == "am_kill:") and processArray[2] == processName:
+						pid = processArray[1]
+						curProcess = processRecords.get(pid, None)
 						if curProcess:
 							curProcess.setEnd(finalDate)
 							curProcess.setStatus(STATUS_NORMAL)
+							#print 'match pid[%s]name[%s] end' % (pid, processArray[2])
 						else :
 							curProcess = ProcessRecord(pid, processName)
 							curProcess.setEnd(finalDate)
 							curProcess.setStatus(STATUS_ONLY_END)
 							processRecords[pid] = curProcess
-					#else :
-					#	print 'action[%s]pid[%s]name[%s]' % (action, pid, processArray[2])						
+							#print 'not match pid[%s]name[%s] end' % (pid, processArray[2])						
 			line = log.readline()
 		if curProcess and curProcess.getStatus() == STATUS_ONLY_BEGIN:
 			curProcess.setEnd(finalDate)

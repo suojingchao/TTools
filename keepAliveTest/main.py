@@ -84,7 +84,7 @@ def main(argc, argv):
 					processEnd = line.index("]")
 					processSection = line[processBegin:processEnd]
 					processArray = processSection.split(",")
-					if ((action == "am_proc_start:" or action == "am_proc_start") and processArray[3] == processName) or ((action == "am_proc_bound:" or action == "am_proc_bound") and processArray[2] == processName):					
+					if ((action == "am_proc_bound:" or action == "am_proc_bound") and processArray[2] == processName):					
 						pid = processArray[1]
 						curProcess = ProcessRecord(pid, processName)
 						curProcess.setBegin(finalDate)

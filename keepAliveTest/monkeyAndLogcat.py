@@ -15,7 +15,7 @@ def runLogcat(device, logcatPath):
 
 def runMonkey(device, monkeyLogPath):
 	print 'runMonkey begin'
-	result = os.system('adb -s %s shell monkey -v -v -v --ignore-security-exceptions --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200 --pkg-blacklist-file /sdcard/blacklist.txt 1000 > %s' % (device, monkeyLogPath))
+	result = os.system('adb -s %s shell monkey -v -v -v --ignore-security-exceptions --ignore-crashes --ignore-native-crashes --ignore-timeouts  --throttle 200 --pkg-blacklist-file /sdcard/blacklist.txt 500000 > %s' % (device, monkeyLogPath))
 	end = time.time()
 	print 'end timestamp : %d' % end
 	os._exit(0)
